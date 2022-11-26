@@ -4,6 +4,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
 
 // middle ware
 app.use(cors());
@@ -18,6 +19,22 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
+
+function verifyJWT(req, res, next) {
+  const AuthHeader = req.headers.authorization;
+
+  if (!AuthHeader) {
+    return res.status(401).send({ message: "UnAuthorized accessed" });
+  }
+  const token = AuthHeader.split(" ")[1];
+  jwt.verify(token, process.env.SERCRET_KEY, function (err, decoded) {
+    if (err) {
+      return res.status(403).send({ message: "Forbidden access" });
+    }
+    req.decoded = decoded;
+    next();
+  });
+}
 
 async function run() {
   const catagoryItemsCollection = client
@@ -66,11 +83,47 @@ async function run() {
       res.send(result);
     });
 
+    app.delete("/allseller/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await userCollection.deleteOne(query);
+      res.send(result);
+    });
+
     // all buyer api
     app.get("/allbuyer", async (req, res) => {
       const query = { userRole: "buyer" };
       const result = await userCollection.find(query).toArray();
       res.send(result);
+    });
+    app.delete("/allbuyer/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await userCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // admin  api
+
+    app.get("/users/admin/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await userCollections.findOne(query);
+      return res.send({ isAdmin: user?.role === "admin" });
+    });
+
+    //  jwt
+    app.get("/jwt", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const user = await userCollections.findOne(query);
+      if (user && user?.email) {
+        const token = jwt.sign({ email }, process.env.SERCRET_KEY, {
+          expiresIn: "1d",
+        });
+        return res.send({ accessToken: token });
+      }
+      return res.status(401).send({ accessToken: "" });
     });
   } finally {
   }
