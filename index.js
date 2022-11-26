@@ -37,13 +37,25 @@ function verifyJWT(req, res, next) {
 }
 
 async function run() {
-  const catagoryItemsCollection = client
-    .db("alikeNew")
-    .collection("catagoryItems");
-  const userCollection = client.db("alikeNew").collection("users");
-  const bookingCollection = client.db("alikeNew").collection("bookings");
-
   try {
+    const catagoryItemsCollection = client
+      .db("alikeNew")
+      .collection("catagoryItems");
+    const userCollection = client.db("alikeNew").collection("users");
+    const bookingCollection = client.db("alikeNew").collection("bookings");
+
+    // verify admin token after jwttoken
+
+    const verifyAdmin = async (req, res, next) => {
+      const decodedEmail = req.decoded.email;
+      const query = { email: decodedEmail };
+      const user = await userCollection.findOne(query);
+      if (user?.userRole !== "admin") {
+        res.status(403).send({ message: "forbidden" });
+      }
+      next();
+    };
+
     app.get("/catagoryItems/:id", async (req, res) => {
       const id = parseInt(req.params.id);
       const query = {
@@ -83,7 +95,7 @@ async function run() {
       res.send(result);
     });
 
-    app.delete("/allseller/:id", async (req, res) => {
+    app.delete("/allseller/:id", verifyJWT, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const result = await userCollection.deleteOne(query);
@@ -96,7 +108,7 @@ async function run() {
       const result = await userCollection.find(query).toArray();
       res.send(result);
     });
-    app.delete("/allbuyer/:id", async (req, res) => {
+    app.delete("/allbuyer/:id", verifyJWT, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const result = await userCollection.deleteOne(query);
@@ -108,8 +120,8 @@ async function run() {
     app.get("/users/admin/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email };
-      const user = await userCollections.findOne(query);
-      return res.send({ isAdmin: user?.role === "admin" });
+      const user = await userCollection.findOne(query);
+      return res.send({ isAdmin: user?.userRole === "admin" });
     });
 
     //  jwt
