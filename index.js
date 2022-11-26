@@ -65,6 +65,13 @@ async function run() {
       const result = await userCollection.find(query).toArray();
       res.send(result);
     });
+
+    // all buyer api
+    app.get("/allbuyer", async (req, res) => {
+      const query = { userRole: "buyer" };
+      const result = await userCollection.find(query).toArray();
+      res.send(result);
+    });
   } finally {
   }
 }
