@@ -27,7 +27,7 @@ function verifyJWT(req, res, next) {
     return res.status(401).send({ message: "UnAuthorized accessed" });
   }
   const token = AuthHeader.split(" ")[1];
-  jwt.verify(token, process.env.SERCRET_KEY, function (err, decoded) {
+  jwt.verify(token, process.env.SECRCT_KEY, function (err, decoded) {
     if (err) {
       return res.status(403).send({ message: "Forbidden access" });
     }
@@ -124,13 +124,30 @@ async function run() {
       return res.send({ isAdmin: user?.userRole === "admin" });
     });
 
+    // user role
+    app.get("/users/role/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await userCollection.findOne(query);
+      return res.send({ role: user?.userRole });
+    });
+
+    // sellers all product api
+
+    app.get("/myorders/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await bookingCollection.find(query).toArray();
+      res.send(result);
+    });
+
     //  jwt
     app.get("/jwt", async (req, res) => {
       const email = req.query.email;
       const query = { email: email };
-      const user = await userCollections.findOne(query);
+      const user = await userCollection.findOne(query);
       if (user && user?.email) {
-        const token = jwt.sign({ email }, process.env.SERCRET_KEY, {
+        const token = jwt.sign({ email }, process.env.SECRCT_KEY, {
           expiresIn: "1d",
         });
         return res.send({ accessToken: token });
