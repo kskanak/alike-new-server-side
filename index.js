@@ -43,6 +43,7 @@ async function run() {
       .collection("catagoryItems");
     const userCollection = client.db("alikeNew").collection("users");
     const bookingCollection = client.db("alikeNew").collection("bookings");
+    const advertiseCollection = client.db("alikeNew").collection("advertise");
 
     // verify admin token after jwttoken
 
@@ -90,6 +91,20 @@ async function run() {
     app.post("/bookings", async (req, res) => {
       const item = req.body;
       const result = await bookingCollection.insertOne(item);
+      res.send(result);
+    });
+
+    // item advertise post api
+    app.post("/advertise", async (req, res) => {
+      const item = req.body;
+      const result = await advertiseCollection.insertOne(item);
+      res.send(result);
+    });
+    // item advertise get api
+
+    app.get("/advertise", async (req, res) => {
+      const query = {};
+      const result = await advertiseCollection.find(query).toArray();
       res.send(result);
     });
 
