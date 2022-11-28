@@ -108,6 +108,15 @@ async function run() {
       res.send(result);
     });
 
+    // all seller product api
+
+    app.get("/sellerProducts/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await catagoryItemsCollection.find(query).toArray();
+      res.send(result);
+    });
+
     // all buyer api
     app.get("/allbuyer", async (req, res) => {
       const query = { userRole: "buyer" };
