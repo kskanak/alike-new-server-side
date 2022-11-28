@@ -102,8 +102,9 @@ async function run() {
     });
     // item advertise get api
 
-    app.get("/advertise", async (req, res) => {
+    app.get("/advertise", verifyJWT, async (req, res) => {
       const query = {};
+
       const result = await advertiseCollection.find(query).toArray();
       res.send(result);
     });
@@ -140,8 +141,23 @@ async function run() {
       res.send(result);
     });
 
+    // seller verify api
+
+    app.put("/verifyseller/:id", verifyJWT, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updatedoc = {
+        $set: {
+          status: "verified",
+        },
+      };
+      const result = await userCollection.updateOne(filter, updatedoc, options);
+      res.send(result);
+    });
+
     // all buyer api
-    app.get("/allbuyer", async (req, res) => {
+    app.get("/allbuyer", verifyJWT, async (req, res) => {
       const query = { userRole: "buyer" };
       const result = await userCollection.find(query).toArray();
       res.send(result);
