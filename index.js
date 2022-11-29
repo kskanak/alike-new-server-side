@@ -133,6 +133,14 @@ async function run() {
       res.send(result);
     });
 
+    // single seller api
+    app.get("/seller/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await userCollection.findOne(query);
+      res.send(result);
+    });
+
     // delete Seller products
     app.delete("/deleteSellerProduct/:id", async (req, res) => {
       const id = req.params.id;
@@ -143,7 +151,7 @@ async function run() {
 
     // seller verify api
 
-    app.put("/verifyseller/:id", verifyJWT, verifyAdmin, async (req, res) => {
+    app.put("/verifyseller/:id", verifyJWT, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: ObjectId(id) };
       const options = { upsert: true };
@@ -162,6 +170,7 @@ async function run() {
       const result = await userCollection.find(query).toArray();
       res.send(result);
     });
+
     app.delete("/allbuyer/:id", verifyJWT, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
