@@ -1,10 +1,10 @@
-require("dotenv").config();
 const express = require("express");
 const app = express();
 const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 // middle ware
 app.use(cors());
